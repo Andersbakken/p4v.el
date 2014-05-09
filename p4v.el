@@ -85,6 +85,11 @@
       (setq p4v-server (p4-current-server-port))
       (p4v-redraw))))
 
+(defun p4v-run (args)
+  (if (fboundp 'p4-exec-p4)
+      (p4-exec-p4 (current-buffer) args)
+    (p4-run args)))
+
 (defun p4v-places-store ()
   (setq p4v-places (remove (assoc p4v-path p4v-places) p4v-places))
   (add-to-list 'p4v-places (cons p4v-path (buffer-substring (point-at-bol) (point-at-eol))) t))
@@ -103,16 +108,16 @@
        ;; pull in all directory-like objects
        (if (string= path "")
            (progn
-             (p4-exec-p4 (current-buffer) '("depots"))
+             (p4v-run '("depots"))
              (goto-char (point-min))
              (while (re-search-forward "^Depot \\([^ ]+\\) .*" nil t)
                (replace-match "\\1" nil nil)))
          (progn
-           (p4-exec-p4 (current-buffer)
-                       (append '("dirs")
-                               (if p4v-include-deleted-files
-                                   '("-D"))
-                               (list (concat "/" path "/*"))))
+           (p4v-run
+            (append '("dirs")
+                    (if p4v-include-deleted-files
+                        '("-D"))
+                    (list (concat "/" path "/*"))))
            (while (re-search-forward (concat "^/" path "/\\* - no such file(s)." (format "\n")) nil t)
              (replace-match  "" nil nil))))
 
@@ -125,7 +130,7 @@
        ;; pull in all files
        (unless (string= path "")
          (progn
-           (p4-exec-p4 (current-buffer) (list "files" (concat "/" path "/*")))
+           (p4v-run (list "files" (concat "/" path "/*")))
            (let ((p4v-re-pattern (concat "^/" path "/"
                                          (if p4v-include-deleted-files
                                              "\\* - no such file(s)."
