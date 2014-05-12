@@ -24,6 +24,8 @@
 
 ;;; Code:
 
+(defgroup p4v nil "Minor mode visualization of perforce depot." :group 'tools :prefix "p4v-")
+
 (require 'p4)
 
 (defvar p4v-sort-dirs-at-top nil)
@@ -35,14 +37,16 @@
 (defface p4v-header-face
   '((t (:inherit dired-header)))
   "Face for header."
-  )
+  :group: 'p4v)
 
 (defface p4v-dir-face
   '((t (:inherit dired-directory)))
   "Face for directories."
-  )
+  :group 'p4v)
 
 (defvar p4v-places nil)
+(defvar p4v-path "")
+(defvar p4v-server "")
 
 (defvar p4v-mode-map
   (let ((map (make-keymap)))
@@ -89,6 +93,11 @@
   (if (fboundp 'p4-exec-p4)
       (p4-exec-p4 (current-buffer) args)
     (p4-run args)))
+
+(defun p4v-annotate (srcspec)
+  (if (fboundp 'p4-blame-int)
+      (p4-blame-int srcspec)
+    (p4-annotate-internal srcspec)))
 
 (defun p4v-places-store ()
   (setq p4v-places (remove (assoc p4v-path p4v-places) p4v-places))
@@ -224,7 +233,7 @@
              (not (equal (face-at-point) 'p4v-header-face)))
         (progn
           (goto-char cur-point)
-          (p4-blame-int (concat "/" p4v-path "/" (buffer-substring (point-at-bol) (point-at-eol)))))
+          (p4v-annotate (concat "/" p4v-path "/" (buffer-substring (point-at-bol) (point-at-eol)))))
       (goto-char cur-point))))
 
 (defun p4v-quit ()
