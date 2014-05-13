@@ -37,7 +37,7 @@
 (defface p4v-header-face
   '((t (:inherit dired-header)))
   "Face for header."
-  :group: 'p4v)
+  :group 'p4v)
 
 (defface p4v-dir-face
   '((t (:inherit dired-directory)))
